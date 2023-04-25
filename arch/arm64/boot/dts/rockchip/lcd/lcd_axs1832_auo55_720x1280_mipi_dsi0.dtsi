@@ -1,0 +1,111 @@
+#include <dt-bindings/display/drm_mipi_dsi.h>
+
+
+
+&dsi0 {
+	status = "okay";
+	//	rockchip,dual-channel = <&dsi1>;
+	
+	//rockchip,lane-rate = <1000>;
+ 	dsi0_panel: panel@0 {
+                compatible ="simple-panel-dsi";
+                reg = <0>;
+		reset-delay-ms = <60>;
+		enable-delay-ms = <120>;
+		prepare-delay-ms = <60>;
+		init-delay-ms = <60>;
+		unprepare-delay-ms = <60>;
+		disable-delay-ms = <60>;
+		
+		
+		dsi,flags = <(MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_BURST |
+			MIPI_DSI_MODE_LPM | MIPI_DSI_MODE_EOT_PACKET | MIPI_DSI_CLOCK_NON_CONTINUOUS)>;
+		dsi,format = <MIPI_DSI_FMT_RGB888>;
+		dsi,lanes  = <4>;
+		panel-init-sequence = [
+			39 14 0c BB 00 00 00 00 00 00 5A A5 40 10 00
+			39 01 1d B2 01 00 17 00 00 B1 15 1A 0F 00 16 A1 97 19 2A 06 37 42 33 96 31 38 36 47 00 00 24 76
+			15 01 02 B2 41
+			39 14 0c C1 33 0A 02 02 71 05 03 03 5F 10 02
+			39 01 17 C1 33 0A 02 02 71 05 03 03 5F 10 02 11 30 FF FF 7F 09 0A 00 4F 52 00
+			39 01 0f C2 0A 33 E2 84 01 08 00 10 10 88 5A 5A 5A 5A
+			39 01 1f c3 45 EA 05 0a 00 D4 30 22 12 22 0A 12 00 00 00 0A 0A 10 C8 F3 0C 0C 40 00 22 22 0C 00 AC CA
+			39 01 03 C4 08 00
+			39 01 0f C8 80 07 38 04 00 05 D0 02 00 18 00 0C 00 04
+			39 01 10 C9 89 00 00 00 00 00 11 11 00 10 00 00 00 00 00
+			39 01 05 ba 91 06 07 22
+			39 01 03 F5 3B 08
+			39 01 12 CF 47 7F 1E C1 55 26 12 92 51 33 00 40 FE 41 80 43 43
+			39 01 17 D0 11 4A F0 13 20 50 05 0F 05 07 36 05 11 0A 64 53 43 41 14 03 00 00
+			39 01 1e d3 23 29 32 3B 3D 40 44 42 63 64 68 6C 70 75 7D 7D 84 92 A1 9E A4 B3 B3 B5 BB B6 B1 BC CC
+			39 01 1e d4 23 29 32 3B 3D 40 44 42 63 64 68 6C 70 75 7D 7D 84 92 A1 9E A4 B3 B3 B5 BB B6 B1 BC CC
+			39 01 1f d5 00 00 85 00 44 64 07 07 00 07 07 00 08 0F F5 12 03 03 03 03 08 03 03 00 00 25 06 00 00 00
+			39 01 1e D6 10 32 54 76 98 BA DC FE 01 00 00 00 07 07 00 07 07 00 03 03 03 03 03 30 1F FF 88 88 00
+			39 01 17 D8 1F 1C 1F 1F 01 1E 1F 1C 09 1F 1F 0B 0D 1F 1F 0F 1F 1F 1F 1F 1F 1F
+			39 01 17 D7 1F 1D 1F 1F 00 1E 1F 1D 08 1F 1F 0A 0C 1F 1F 0E 1F 1F 1F 1F 1F 1F
+			39 01 17 dd 1F 1d 1F 1F 1D 1F 1E 00 0E 1F 1F 0C 0A 1F 1F 08 1F 1F 1F 1F 1F 1F
+			39 01 17 d9 1F 1c 1F 1F 1C 1F 1E 01 0F 1F 1F 0D 0B 1F 1F 09 1F 1F 1F 1F 1F 1F
+			39 01 13 DF 55 55 20 00 00 AA 33 33 43 44 44 44 44 74 77 77 5F 00
+			39 01 0c C6 B6 B2 00 00 01 11 02 00 00 00 00
+			39 01 19 C5 10 44 F4 01 00 01 08 a0 0F 04 F4 F1 00 01 0A F0 F0 00 00 2D 37 07 33 34
+			39 01 03 B7 40 03
+			39 01 03 BC 00 00
+			05 01 01 21
+			05 78 01 11
+			05 14 01 29
+			39 01 03 B7 6B 03
+		
+		
+
+		];
+
+		panel-exit-sequence = [
+			05 00 01 28
+			05 00 01 10
+		];
+
+		disp_timings0: display-timings {
+                        native-mode = <&dsi0_timing0>;
+            dsi0_timing0: timing0 {
+				clock-frequency = <66000000>;
+				hactive = <720>;
+				vactive = <1280>;
+				hback-porch = <50>;
+				hfront-porch = <50>;
+				vback-porch = <8>;
+				vfront-porch = <16>;
+				hsync-len = <10>;
+				vsync-len = <4>;
+				hsync-active = <0>;
+				vsync-active = <0>;
+				de-active = <0>;
+				pixelclk-active = <0>;
+                    	};
+               };
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port@0 {
+				reg = <0>;
+				panel_in_dsi: endpoint {
+					remote-endpoint = <&dsi_out_panel>;
+				};
+			};
+		};
+	};
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port@1 {
+			reg = <1>;
+			dsi_out_panel: endpoint {
+				remote-endpoint = <&panel_in_dsi>;
+			};
+		};
+	};
+
+};

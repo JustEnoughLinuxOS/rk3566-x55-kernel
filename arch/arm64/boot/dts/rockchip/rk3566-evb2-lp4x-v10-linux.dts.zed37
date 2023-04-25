@@ -1,0 +1,475 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2020 Rockchip Electronics Co., Ltd.
+ *
+ */
+
+#include "rk3566-evb2-lp4x-v10.dtsi"
+#include "rk3568-linux.dtsi"
+#include <dt-bindings/display/rockchip_vop.h>
+/ {	
+
+	backlight2: backlight2 {
+		compatible = "pwm-backlight";
+		pwms = <&pwm6 0 1000000 0>;
+		brightness-levels = <
+			  255 254 253 252 251 250 249 248 247 246 245 244 243 242 241 240
+		     239 238 237 236 235 234 233 232 231 230 229 228 227 226 225 224 223 222 221 220
+		     219 218 217 216 215 214 213 212 211 210 209 208 207 206 205 204 203 202 201 200
+		     199 198 197 196 195 194 193 192 191 190 189 188 187 186 185 184 183 182 181 180
+		     179 178 177 176 175 174 173 172 171 170 169 168 167 166 165 164 163 162 161 160
+		     159 158 157 156 155 154 153 152 151 150 149 148 147 146 145 144 143 142 141 140
+		     139 138 137 136 135 134 133 132 131 130 129 128 127 126 125 124 123 122 121 120
+		     119 118 117 116 115 114 113 112 111 110 109 108 107 106 105 104 103 102 101 100
+		     99 98 97 96 95 94 93 92 91 90 89 88 87 86 85 84 83 82 81 80 79 78 77 76 75 74 73 72 71 70
+		     69 68 67 66 65 64 63 62 61 60 59 58 57 56 55 54 53 52 51 50 49 48 47 46 45 44 43 42 41 40
+		     39 38 37 36 35 34 33 32 31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10
+		     9 8 7 6 5 4 3 2 1 0
+		>;
+		default-brightness-level = <200>;
+		enable-gpios = <&gpio0 RK_PC1 GPIO_ACTIVE_HIGH>;
+	};
+	
+	panel: panel {
+        compatible = "simple-panel";
+        backlight = <&backlight2>;
+        enable-gpios = <&gpio0 RK_PC7 GPIO_ACTIVE_HIGH>;
+        power-supply = <&vcc_3v3>;
+        unprepare-delay-ms = <20>;
+        enable-delay-ms = <100>;
+        disable-delay-ms = <20>;
+        prepare-delay-ms = <200>;
+        reset-delay-ms = <20>;
+        status = "okay";
+        
+        display-timings {
+            native-mode = <&timing0>;
+
+            timing0: timing0 {
+                clock-frequency = <151580000>;
+                hactive = <1920>;
+                vactive = <1080>;
+                hfront-porch = <120>;
+                hback-porch = <300>;
+                hsync-len = <5>;
+                vfront-porch = <20>;
+                vback-porch = <58>;
+                vsync-len = <2>;
+                hsync-active = <0>;
+                vsync-active = <0>;
+                de-active = <0>;
+                pixelclk-active = <0>;
+            };
+        };
+
+        ports {
+            panel_in: endpoint {
+                remote-endpoint = <&edp_out>;
+            };
+        };
+    };
+	
+};
+
+
+&vp0 {
+     cursor-win-id=<ROCKCHIP_VOP2_CLUSTER0>;
+     rockchip,plane-mask = <( 1 << ROCKCHIP_VOP2_CLUSTER0 | 1<< ROCKCHIP_VOP2_ESMART0 | 1 << ROCKCHIP_VOP2_SMART0)>;
+     rockchip,primary-plane = <ROCKCHIP_VOP2_SMART0>;
+};
+ 
+&vp1 {
+     cursor-win-id=<ROCKCHIP_VOP2_CLUSTER1>;
+     rockchip,plane-mask = <( 1 << ROCKCHIP_VOP2_CLUSTER1 | 1<< ROCKCHIP_VOP2_ESMART1 | 1 <<  ROCKCHIP_VOP2_SMART1)>;
+     rockchip,primary-plane = <ROCKCHIP_VOP2_SMART1>;
+};
+
+&rknpu {
+    rknpu-supply = <&vdd_npu>;
+    status = "disabled";
+};
+ 
+&rknpu_mmu {
+    status = "disabled";
+};
+ 
+&bus_npu {
+    bus-supply = <&vdd_logic>;
+    pvtm-supply = <&vdd_cpu>;                                                                             
+    status = "disabled";
+};
+
+/*
+ * mipi_dphy0 needs to be enabled
+ * when dsi0 is enabled
+ */
+&dsi0 {
+	status = "disabled";
+};
+
+&dsi0_in_vp0 {
+	status = "disabled";
+};
+
+&dsi0_in_vp1 {
+	status = "disabled";
+};
+
+
+/*
+ * mipi_dphy1 needs to be enabled
+ * when dsi1 is enabled
+ */
+&dsi1 {
+	status = "disabled";
+};
+
+&dsi1_in_vp0 {
+	status = "disabled";
+};
+
+&dsi1_in_vp1 {
+	status = "disabled";
+};
+
+
+
+&video_phy0 {
+	status = "disabled";
+};
+
+&video_phy1 {
+	status = "disabled";
+};
+
+
+&hdmi {
+	status = "okay";
+};
+
+&hdmi_in_vp0 {
+	status = "okay";
+};
+
+&hdmi_in_vp1 {
+	status = "disabled";
+};
+
+&hdmi_sound {
+	status = "okay";
+};	
+
+
+&edp_phy{
+	status = "okay";
+};
+
+&edp {
+	status = "okay";
+	force-hpd;
+
+	ports {
+		port@1 {
+			reg = <1>;
+
+			edp_out: endpoint {
+				remote-endpoint = <&panel_in>;
+			};
+		};
+	};
+};
+
+
+&edp_in_vp0 {
+	status = "okay";
+};
+
+&edp_in_vp1 {
+	status = "disabled";
+};
+
+&route_dsi0 {
+	status = "disabled";
+	connect = <&vp1_out_dsi0>;
+};
+
+&route_hdmi {
+	status = "disabled";
+	connect = <&vp0_out_hdmi>;
+};
+
+&route_edp {
+	status = "okay";
+	connect = <&vp0_out_edp>;
+};
+
+
+
+
+
+
+/*******************************backlight2***************************************/
+&pwm6 {
+	status = "okay";
+};
+
+
+
+/*******************************fan***************************************/
+&pwm11 {
+	status = "okay";
+	pinctrl-names = "active";
+	pinctrl-0 = <&pwm11m1_pins>;
+};
+
+/*******************************wifi***************************************/
+&sdio_pwrseq {
+	post-power-on-delay-ms = <200>;
+	reset-gpios = <&gpio2 RK_PB1 GPIO_ACTIVE_LOW>;
+};
+
+&sdhci {
+	status = "disabled";
+};
+&sdmmc1 {
+	max-frequency = <150000000>;
+	supports-sdio;
+	bus-width = <4>;
+	disable-wp;
+	cap-sd-highspeed;
+	cap-sdio-irq;
+	keep-power-in-suspend;
+	mmc-pwrseq = <&sdio_pwrseq>;
+	non-removable;
+	pinctrl-names = "default";
+	pinctrl-0 = <&sdmmc1_bus4 &sdmmc1_cmd &sdmmc1_clk>;
+	sd-uhs-sdr104;
+	status = "okay";
+};
+
+
+&wireless_wlan {
+	wifi_chip_type = "ap6256";
+	pinctrl-names = "default";
+	pinctrl-0 = <&wifi_host_wake_irq>;
+	WIFI,host_wake_irq = <&gpio2 RK_PB2 GPIO_ACTIVE_HIGH>;
+	//	rockchip,grf = <&grf>;
+	clocks = <&rk809 1>;
+	clock-names = "clk_wifi";
+};
+
+&wireless_bluetooth {
+	compatible = "bluetooth-platdata";
+	clocks = <&rk809 1>;
+	clock-names = "ext_clock";
+	//wifi-bt-power-toggle;
+	uart_rts_gpios = <&gpio2 RK_PB5 GPIO_ACTIVE_LOW>;
+	pinctrl-names = "default", "rts_gpio";
+	pinctrl-0 = <&uart1m0_rtsn>;
+	pinctrl-1 = <&uart1_gpios>;
+	BT,reset_gpio    = <&gpio2 RK_PB7 GPIO_ACTIVE_HIGH>;
+//	BT,wake_gpio     = <&gpio2 RK_PC1 GPIO_ACTIVE_HIGH>;
+//	BT,wake_host_irq = <&gpio2 RK_PC0 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+};
+
+/*******************************GMAC***************************************/
+&gmac1_clkin{
+	status = "disabled";
+    clock-frequency = <50000000>;
+};
+
+&gmac1 {
+	status = "disabled";
+	phy-mode = "rmii";
+	clock_in_out = "input"; //input or output
+
+	snps,reset-gpio = <&gpio4 RK_PC2 GPIO_ACTIVE_LOW>;
+	snps,reset-active-low;
+	snps,reset-delays-us = <0 20000 100000>;
+
+    assigned-clocks = <&cru SCLK_GMAC1_RX_TX>, <&cru SCLK_GMAC1>, <&cru CLK_MAC1_OUT>;
+    assigned-clock-parents = <&cru SCLK_GMAC1_RMII_SPEED>,<&gmac1_clkin>;
+    assigned-clock-rates = <0>, <0>, <25000000>;
+
+	pinctrl-names = "default";
+	pinctrl-0 = <&gmac1m0_miim
+	         &gmac1m0_clkinout
+		     &gmac1m0_tx_bus2
+		     &gmac1m0_rx_bus2
+			 &gmac1m0_rx_er
+			 &eth1m0_pins>;
+
+	phy-handle = <&rmii_phy1>;
+};
+
+&mdio1 {
+	status = "disabled";
+    rmii_phy1: phy@0 {	
+        compatible = "ethernet-phy-ieee802.3-c22";
+        reg = <0x0>;
+        clocks = <&cru CLK_MAC1_OUT>;
+    };
+};
+/*******************************sound card***************************************/
+&spdif_8ch {
+	status = "disabled";
+};
+
+&spdif_out{
+	status = "disabled";
+};
+
+&spdif_sound{
+	status = "disabled";
+};
+
+&rk809_sound {
+	status = "okay";
+};
+
+
+&rk809_codec{
+	status = "okay";
+	use-ext-amplifier;
+	spk-ctl-gpios = <&gpio4 RK_PC3 GPIO_ACTIVE_HIGH>;
+};
+
+&i2s1_8ch {
+	status = "okay";
+};
+
+/*******************************USB配置***************************************/
+/*******控制器******/
+//控制器 3.0  host
+&usbhost30 {
+	status = "okay";
+};
+
+&usbhost_dwc3 {
+	status = "okay";
+};
+
+//控制器 3.0  OTG
+&usbdrd_dwc3 {
+	dr_mode = "otg";
+	phys = <&u2phy0_otg>;
+	phy-names = "usb2-phy";
+	extcon = <&usb2phy0>;
+	status = "okay";
+};
+
+&usbdrd30 {
+	status = "okay";
+};
+
+
+//控制器 2.0  host0  host1
+&usb_host0_ehci {
+	status = "disabled";
+};
+
+&usb_host0_ohci {
+	status = "disabled";
+};
+
+&usb_host1_ehci {
+	status = "disabled";
+};
+
+&usb_host1_ohci {
+	status = "disabled";
+};
+
+
+/*******phy******/
+//usb2phy0
+&usb2phy0 {
+	status = "okay";
+};
+
+&u2phy0_host {
+	phy-supply = <&vcc5v0_host>;
+	status = "okay";
+};
+
+&u2phy0_otg {
+	vbus-supply = <&vcc5v0_otg>;
+	status = "okay";
+};
+
+
+//usb2phy1
+&usb2phy1 {
+	status = "disabled";
+};
+
+&u2phy1_host {
+	phy-supply = <&vcc5v0_host>;
+	status = "disabled";
+};
+
+&u2phy1_otg {
+	phy-supply = <&vcc5v0_host>;
+	status = "disabled";
+};
+
+
+&combphy1_usq {
+	status = "okay";
+};
+
+
+/*******************************sata配置***************************************/
+
+
+
+&combphy2_psq {
+	status = "okay";
+};
+
+&sata2{
+	status = "okay";
+};
+
+
+&pcie2x1 {
+	vpcie3v3-supply = <&vcc3v3_pcie>;
+	status = "disabled";
+};
+
+
+
+
+
+
+/*******************************i2c***************************************/
+&i2c1 {
+	status = "okay";
+
+    hym8563: hym8563@51 {
+		     status = "okay";
+        compatible = "haoyu,hym8563";
+        reg = <0x51>;
+        pinctrl-names = "default";
+        pinctrl-0 = <&rtc_int>;
+        wakeup-source;
+
+        interrupt-parent = <&gpio0>;
+        interrupts = <RK_PD3 IRQ_TYPE_LEVEL_LOW>;
+    };
+};
+
+
+
+
+
+
+/************************************************************PINCTRL 配置************************************************************/
+&pinctrl {
+	    rtc {
+                rtc_int: rtc-int {
+                         rockchip,pins = <0 RK_PD3 RK_FUNC_GPIO &pcfg_pull_up>;
+                };
+        };
+};
