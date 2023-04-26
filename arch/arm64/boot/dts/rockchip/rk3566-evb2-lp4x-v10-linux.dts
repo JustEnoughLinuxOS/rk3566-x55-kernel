@@ -18,7 +18,7 @@
 //#include "lcd/lcd_axs1832_auo55_720x1280_mipi_dsi0.dtsi"
 #include "lcd/lcd_HX8394F_720x1280_mipi_dsi0.dtsi"
 / {
-	model = "Rockchip RK3566 RK817 TABLET LP4X Board";
+	model = "Powkiddy x55";
 	compatible = "rockchip,rk3566-rk817-tablet", "rockchip,rk3566";
 /*
 	adc_keys: adc-keys {
