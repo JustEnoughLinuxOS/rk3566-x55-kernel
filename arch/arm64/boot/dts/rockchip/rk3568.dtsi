@@ -2225,12 +2225,28 @@
 		>;
 		rockchip,pvtm-ch = <0 5>;
 
-		opp-1560000000 {
-			opp-hz = /bits/ 64 <1560000000>;
-			opp-microvolt = <900000>;
-			opp-microvolt-L0 = <900000>;
-			opp-microvolt-L1 = <850000>;
-		};
+                opp-324000000 {
+                        opp-hz = /bits/ 64 <324000000>;
+                        opp-microvolt = <900000>;
+                };
+                opp-528000000 {
+                        opp-hz = /bits/ 64 <528000000>;
+                        opp-microvolt = <900000>;
+                };
+                opp-780000000 {
+                        opp-hz = /bits/ 64 <780000000>;
+                        opp-microvolt = <900000>;
+                };
+                opp-920000000 {
+                        opp-hz = /bits/ 64 <920000000>;
+                        opp-microvolt = <900000>;
+                        status = "disabled";
+                };
+                opp-1560000000 {
+                        opp-hz = /bits/ 64 <1560000000>;
+                        opp-microvolt = <900000>;
+                };
+
 	};
 
 	dmcdbg: dmcdbg {

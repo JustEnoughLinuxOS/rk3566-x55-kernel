@@ -11,10 +11,6 @@
 	};
 };
 
-&cpu0_opp_table {
-	/delete-node/ opp-1992000000;
-};
-
 &lpddr4_params {
 	/* freq info, freq_0 is final frequency, unit: MHz */
 	freq_0 = <1056>;
