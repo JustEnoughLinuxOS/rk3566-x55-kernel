@@ -744,8 +744,8 @@
 			pinctrl-0 = <&i2s1m0_mclk>;
 			hp-volume = <3>;
 			spk-volume = <3>;
-			//out-l2spk-r2hp;
-			use-ext-amplifier;
+			out-l2spk-r2hp;
+			//use-ext-amplifier;
 			spk-ctl-gpios = <&gpio4 RK_PC2 GPIO_ACTIVE_HIGH>;
 			status = "okay";
 		};
