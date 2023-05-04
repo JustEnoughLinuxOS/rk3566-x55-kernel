@@ -1860,9 +1860,10 @@ static int rk817_bat_get_prev_dsoc(struct rk817_battery_device *battery)
 {
 	int soc_save;
 
-	soc_save = rk817_bat_field_read(battery, SOC_REG0);
-	soc_save |= (rk817_bat_field_read(battery, SOC_REG1) << 8);
-	soc_save |= (rk817_bat_field_read(battery, SOC_REG2) << 16);
+	//soc_save = rk817_bat_field_read(battery, SOC_REG0);
+	//soc_save |= (rk817_bat_field_read(battery, SOC_REG1) << 8);
+	//soc_save |= (rk817_bat_field_read(battery, SOC_REG2) << 16);
+	soc_save = battery->rsoc;
 
 	return soc_save;
 }
@@ -2131,7 +2132,7 @@ static void rk817_bat_calc_sm_linek(struct rk817_battery_device *battery)
 		
 				if (ocv_soc <= 1)
 					 linek = -2000;
-				printk("ocv check else..............linek: %d\n", linek);
+				//printk("ocv check else..............linek: %d\n", linek);
 			}
 	}
 
@@ -2307,7 +2308,7 @@ static void rk817_bat_rsoc_init(struct rk817_battery_device *battery)
 	else
 		rk817_bat_not_first_pwron(battery);
 
-	 rk817_bat_save_dsoc(battery, battery->dsoc);
+	 rk817_bat_save_dsoc(battery, battery->rsoc);
 }
 
 static void rk817_bat_caltimer_isr(struct timer_list *t)
@@ -2692,7 +2693,7 @@ static int rk817_battery_get_property(struct power_supply *psy,
 			val->intval = VIRTUAL_VOLTAGE * 1000;
 		break;
 	case POWER_SUPPLY_PROP_CAPACITY:
-		val->intval = (battery->dsoc  + 300) / 1000;
+		val->intval = (battery->rsoc  + 300) / 1000;
 		if (battery->pdata->bat_mode == MODE_VIRTUAL)
 			val->intval = VIRTUAL_SOC;
 		break;
@@ -2875,7 +2876,7 @@ static void rk817_battery_debug_info(struct rk817_battery_device *battery)
 	rk817_bat_get_ocv_current0(battery);
 	rk817_bat_get_pwron_current(battery);
 	rk817_bat_get_ocv_count(battery);
-	rk817_bat_save_dsoc(battery, battery->dsoc);
+	rk817_bat_save_dsoc(battery, battery->rsoc);
 	DBG("capactiy = %d\n", rk817_bat_get_capacity_mah(battery));
 }
 
@@ -2939,7 +2940,7 @@ static void rk817_bat_update_info(struct rk817_battery_device *battery)
 
 static void rk817_bat_save_data(struct rk817_battery_device *battery)
 {
-	rk817_bat_save_dsoc(battery, battery->dsoc);
+	rk817_bat_save_dsoc(battery, battery->rsoc);
 	rk817_bat_save_cap(battery, battery->remain_cap / 1000);
 }
 
@@ -3646,8 +3647,8 @@ static void rk817_bat_output_info(struct rk817_battery_device *battery)
 
 	DBG("dsoc/1000 = %d, dsoc = %d, rsoc = %d, info: zero_link = %d, voltage = %d, sm_link = %d, remain_cap = %d\n",
 			battery->dsoc / 1000, battery->dsoc,  battery->rsoc, battery->zero_linek, battery->voltage_avg, battery->sm_linek, battery->remain_cap);
-	printk("dsoc/1000 = %d, dsoc = %d, rsoc = %d, info: zero_link = %d, voltage = %d, sm_link = %d, remain_cap = %d\n",
-			battery->dsoc / 1000, battery->dsoc,  battery->rsoc, battery->zero_linek, battery->voltage_avg, battery->sm_linek, battery->remain_cap);
+	//printk("dsoc/1000 = %d, dsoc = %d, rsoc = %d, info: zero_link = %d, voltage = %d, sm_link = %d, remain_cap = %d\n",
+	//		battery->dsoc / 1000, battery->dsoc,  battery->rsoc, battery->zero_linek, battery->voltage_avg, battery->sm_linek, battery->remain_cap);
 	DBG("info END.\n");
 }
 
