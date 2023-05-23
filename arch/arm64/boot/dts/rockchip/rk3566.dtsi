@@ -11,14 +11,27 @@
 	};
 };
 
-&lpddr4_params {
-	/* freq info, freq_0 is final frequency, unit: MHz */
-	freq_0 = <1056>;
+&dmc {
+        system-status-freq = <
+                /*system status         freq(KHz)*/
+                SYS_STATUS_NORMAL       780000
+                SYS_STATUS_REBOOT       1056000
+                SYS_STATUS_SUSPEND      324000
+                SYS_STATUS_VIDEO_4K     780000
+                SYS_STATUS_VIDEO_4K_10B 780000
+                SYS_STATUS_BOOST        1056000
+                SYS_STATUS_ISP          1056000
+                SYS_STATUS_PERFORMANCE  1056000
+                SYS_STATUS_DUALVIEW     1056000
+        >;
+//	status = "okay";
 };
 
-&lpddr4x_params {
-	/* freq info, freq_0 is final frequency, unit: MHz */
-	freq_0 = <1056>;
+&dmc_opp_table {
+        opp-1056000000 {
+                opp-hz = /bits/ 64 <1056000000>;
+                opp-microvolt = <900000>;
+        };
 };
 
 &power {
