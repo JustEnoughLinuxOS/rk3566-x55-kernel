@@ -3228,7 +3228,7 @@
 		clock-names = "saradc", "apb_pclk";
 		resets = <&cru SRST_P_SARADC>;
 		reset-names = "saradc-apb";
-		status = "disabled";
+		status = "okay";
 	};
 
 	mailbox: mailbox@fe780000 {
