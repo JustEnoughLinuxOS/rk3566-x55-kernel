@@ -2131,7 +2131,7 @@ static void rk817_bat_calc_sm_linek(struct rk817_battery_device *battery)
 		
 				if (ocv_soc <= 1)
 					 linek = -2000;
-				printk("ocv check else..............linek: %d\n", linek);
+				//printk("ocv check else..............linek: %d\n", linek);
 			}
 	}
 
@@ -4285,8 +4285,8 @@ static int   rk817_bat_sleep_dischrg(struct rk817_battery_device *battery)
 	if (battery->dsoc  > 100 * 1000)
 		battery->dsoc = 100 * 1000;
 
-	printk("<%s>. out: dsoc=%d, rsoc=%d, sum_cap=%d\n",
-	    __func__, battery->dsoc, battery->rsoc, battery->sleep_sum_cap);
+	//printk("<%s>. out: dsoc=%d, rsoc=%d, sum_cap=%d\n",
+	//    __func__, battery->dsoc, battery->rsoc, battery->sleep_sum_cap);
 
 	return 1;
 }
