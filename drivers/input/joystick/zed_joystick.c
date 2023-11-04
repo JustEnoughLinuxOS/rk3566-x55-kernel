@@ -25,8 +25,8 @@
 	#define DBG(args...)  printk(args)
 #endif
 
-static unsigned int axis_flag = 0;
 //键值可定义在DTS里面 比较方便修改
+//tr: Key values can be defined in DTS, which is more convenient to modify.
 static unsigned int joy_gpio_key_map[32] = {
 											BTN_TR,
 											BTN_TR2,
@@ -79,7 +79,7 @@ struct zed_joystick_dev {
 	u32 num_gpio_keys;   //gpio key
 	u32 debounce_interval;
 	u32 axis_level;
-	u32 otg_gpio;  //推迟USB外设的使能
+	u32 otg_gpio;  //推迟USB外设的使能 tr: Delay enabling of USB peripherals
 	struct joy_adc_keys_button *map;
 	struct joy_gpio_keys_button *gpio_map;
 };
@@ -88,6 +88,7 @@ struct zed_joystick_dev *zed_joystick;
 static u32 jitter = 30;
 
 //音量加减对应的GPIO
+//tr: GPIO corresponding to volume addition and subtraction
 static u32 volume_up_gpio = 133;
 static u32 volume_down_gpio = 131;
 
@@ -101,20 +102,16 @@ static void gpio_keys_gpio_work_func(struct work_struct *work)
 	struct joy_gpio_keys_button *map = container_of(work, struct joy_gpio_keys_button, work.work);
 	
 	//低按下
+	//tr: Active Low
 	state = gpio_get_value(map->gpio);
-//	DBG("%s...code:gpio:value = %d:%d:%d\n",__func__,map->keycode,map->gpio,!state);
 	
-	if ( map->gpio != volume_up_gpio &&  map->gpio != volume_down_gpio){//josytick设备
+	if ( map->gpio != volume_up_gpio &&  map->gpio != volume_down_gpio){//josytick设备 tr: Joystick Device
 		input_report_key(dev->input, map->keycode, !state);
 		input_sync(dev->input);
-	}else{//kbd输入设备
+	}else{//kbd输入设备 tr: kbd input device
 		input_report_key(input_dev, map->keycode, !state);
 		input_sync(input_dev);
 	}
-	
-	
-	
-
 }
 
 
@@ -127,6 +124,7 @@ static irqreturn_t keys_isr(int irq, void *dev_id)
 	BUG_ON(irq != map->irq);
 	
 	//是否不需要使用延时 中断内不能有睡眠API
+	//tr: Is there no need to use a delay? There cannot be a sleep API within the interrupt.
 	//mod_delayed_work(system_wq,&map->work, msecs_to_jiffies(zed_joystick->debounce_interval));
 	mod_delayed_work(system_wq,&map->work, msecs_to_jiffies(10));	
 
@@ -134,18 +132,15 @@ static irqreturn_t keys_isr(int irq, void *dev_id)
 }
 
 
-static void  adc_keys_work_func(struct work_struct *work)
+static void adc_keys_work_func(struct work_struct *work)
 {
 	//struct input_polled_dev *dev =  zed_joystick->poll_dev;	
 	//struct joy_adc_keys_button *map = container_of(work, struct joy_adc_keys_button, work.work);
 	
-	
-	
-	
+	//no-op?
 }
 
 //0~1800<------>-32768~32767
-
 u32 adc_val_to_axis(int value)
 {
 	u32	axis_value;
@@ -156,150 +151,62 @@ u32 adc_val_to_axis(int value)
 		axis_value = 9;
 		
 	}
-	return 	axis_value;
 
+	return axis_value;
 }
-
-
-static void jk_keys_poll_channel(struct zed_joystick_dev *jk,struct iio_channel *channel)
-{
-	int i, value,ret;
-//	u32 diff, closest = 0xffffffff;
-	int keycode = 0;
-	struct input_polled_dev *dev =  jk->poll_dev;
-	u32 axis_value;
-	struct joy_adc_keys_button *map;
-	
-	ret = iio_read_channel_processed(channel, &value);
-
-/*	
-	if (unlikely(ret < 0)) {
-		
-		value = jk->keyup_voltage;
-	} else {
-		for (i = 0; i < jk->num_keys; i++) { //找到最接近的adc对应的keycode
-			if ( jk->map[i].adc_chan == channel->channel->channel){  //adc 通道匹配
-				diff = abs(jk->map[i].voltage - value);
-				if (diff < closest) {
-					closest = diff;
-					keycode = jk->map[i].keycode;
-					map = &jk->map[i];
-				}
-			}	
-		}
-	}
-
-	
-	
-	if (abs(jk->keyup_voltage - value) < closest){
-		keycode = 0;
-		return;
-	}	
-*/	
-	for (i = 0; i < jk->num_keys; i++){
-		if ( jk->map[i].adc_chan == channel->channel->channel){  //adc 通道匹配
-			keycode = jk->map[i].keycode;//axis轴
-			map = &jk->map[i];
-		}	
-	}
-
-//	DBG("%s adc channel:keycode:voltage = %d:%d:%d\n", __func__,channel->channel->channel,keycode,value);
-/*	if (map->last_key && map->last_key != keycode) //最新的按键与上次的不一致.将上次的释放
-		input_report_key(dev->input, map->last_key, 0);
-
-	if (keycode)
-		input_report_key(dev->input, keycode, 1);  //上报
-*/
-
-	axis_value = adc_val_to_axis(value);
-//	printk("%s axis value:last_key  = %d:%d\n", __func__,axis_value,map->last_key);
-
-	if (axis_flag == 0) { //axis
-		input_report_abs(dev->input, keycode, axis_value);
-		input_sync(dev->input);
-	}else if (axis_flag == 1) { //dpad
-		if( keycode == ABS_X){	//ABS_X
-			if(axis_value > 13 && map->last_key != BTN_DPAD_RIGHT ){ //右
-				if(map->last_key == BTN_DPAD_LEFT){//可能按键过快adc没抓到死区的数据
-					input_report_key(dev->input, BTN_DPAD_LEFT, 0);
-					input_sync(dev->input);
-				}
-				input_report_key(dev->input, BTN_DPAD_RIGHT, 1);
-				input_sync(dev->input);
-				map->last_key = BTN_DPAD_RIGHT;
-			} else if (axis_value < 5 && map->last_key != BTN_DPAD_LEFT ){//左
-				if(map->last_key == BTN_DPAD_RIGHT){//可能按键过快adc没抓到死区的数据
-					input_report_key(dev->input, BTN_DPAD_RIGHT, 0);
-					input_sync(dev->input);
-				}	
-				input_report_key(dev->input, BTN_DPAD_LEFT, 1);
-				input_sync(dev->input);
-				map->last_key = BTN_DPAD_LEFT;
-			} else if (axis_value >=5 && axis_value <=13){ //死区
-				if(map->last_key == BTN_DPAD_LEFT){
-					input_report_key(dev->input, BTN_DPAD_LEFT, 0);
-					input_sync(dev->input);
-				}
-				if(map->last_key == BTN_DPAD_RIGHT){
-					input_report_key(dev->input, BTN_DPAD_RIGHT, 0);
-					input_sync(dev->input);
-				}
-				map->last_key = 0;
-			}
-		}
-		
-		if (keycode == ABS_Y){ //ABS_Y
-			if(axis_value > 13 && map->last_key != BTN_DPAD_DOWN){ //下
-				if(map->last_key == BTN_DPAD_UP){//可能按键过快adc没抓到死区的数据
-					input_report_key(dev->input, BTN_DPAD_UP, 0);
-					input_sync(dev->input);
-				}
-				input_report_key(dev->input, BTN_DPAD_DOWN, 1);
-				input_sync(dev->input);
-				map->last_key = BTN_DPAD_DOWN;
-			} else if (axis_value < 5 && map->last_key != BTN_DPAD_UP){//上
-				if(map->last_key == BTN_DPAD_DOWN){//可能按键过快adc没抓到死区的数据
-					input_report_key(dev->input, BTN_DPAD_DOWN, 0);
-					input_sync(dev->input);
-				}
-				input_report_key(dev->input, BTN_DPAD_UP, 1);
-				input_sync(dev->input);
-				map->last_key = BTN_DPAD_UP;
-			} else if (axis_value >=5 && axis_value <=13) { //死区
-				if(map->last_key == BTN_DPAD_UP){
-					input_report_key(dev->input, BTN_DPAD_UP, 0);
-					input_sync(dev->input);
-				}
-				if(map->last_key == BTN_DPAD_DOWN){
-					input_report_key(dev->input, BTN_DPAD_DOWN, 0);
-					input_sync(dev->input);
-				}
-				map->last_key = 0;
-			
-			}
-		}
-	}
-	
-	
-//	map->last_key = keycode;
-
-
-//	mod_delayed_work(system_wq,&jk->map[i]->work, msecs_to_jiffies(zed_joystick->debounce_interval));	
-
-
-	
-	
-}
-
 
 static void jk_keys_poll(struct input_polled_dev *dev)
 {
 	struct zed_joystick_dev *jk = dev->private;
-	jk_keys_poll_channel(jk,jk->channel0);
-	jk_keys_poll_channel(jk,jk->channel1);
-	jk_keys_poll_channel(jk,jk->channel2);
-	jk_keys_poll_channel(jk,jk->channel3);
+	int i, x, y, mag, ret;
+	int deadzone, range = jk->keyup_voltage / 2;
+	struct iio_channel *channels[] = {
+		jk->channel0,
+		jk->channel1,
+		jk->channel2,
+		jk->channel3,
+	};
 
+	// deadzone = range * 0.15
+	deadzone = (range * 100) * 15 / 10000;
+
+	for (i = 0; i < ARRAY_SIZE(channels); i+=2)
+	{
+		ret = iio_read_channel_processed(channels[i], &x);
+		ret = iio_read_channel_processed(channels[i+1], &y);
+
+		// Convert [0, max] to [-max/2, +max/2]
+		x -= range;
+		y -= range;
+
+ 		/* Joystick Deadzone check */
+		mag = int_sqrt((x * x) + (y * y));
+		if (deadzone) {
+			if (mag <= deadzone) {
+				x = 0;
+				y = 0;
+			}
+			else {
+				/* Assumes adc_max == -adcx->min == adcy->max == -adcy->min */
+				/* Order of operations is critical to avoid integer overflow */
+				x = (((range * x) / mag) * (mag - deadzone)) / (range - deadzone);
+				y = (((range * y) / mag) * (mag - deadzone)) / (range - deadzone);
+			}
+ 		}
+
+		// Bias towards the outside by 5% (outer deadzone).
+		y = (y * 100) * 105 / 10000;
+		x = (x * 100) * 105 / 10000;
+
+		// And now convert back
+		x += range;
+		y += range;
+
+		input_report_abs(dev->input, jk->map[i].keycode, x);
+		input_report_abs(dev->input, jk->map[i+1].keycode, y);
+	}
+
+	input_sync(dev->input);
 }
 
 
@@ -432,27 +339,6 @@ static int gpio_keys_load_keymap(struct device *dev, struct zed_joystick_dev *jk
 	return ret;
 }
 
-
-static ssize_t axis_to_dpad_store(struct device *dev, struct device_attribute *attr, const char *buf,size_t count)
-{
-
-        //struct platform_device* pdev = container_of(dev,struct platform_device,dev);
-	sscanf(buf, "%01d", &axis_flag);
-        printk("%s... axis_flag = %d \n",__func__,axis_flag);
-
-        return count;
-
-}
-
-static ssize_t axis_to_dpad_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-        printk("%s...%d\n",__func__,axis_flag);
-        return sprintf(buf,"%01d",axis_flag);
-
-}
-
-static DEVICE_ATTR(axis_to_dpad, S_IWUSR | S_IRUSR ,axis_to_dpad_show, axis_to_dpad_store);
-
 static int zed_joystick_probe(struct platform_device *pdev)
 {
 	struct device_node *np;
@@ -460,8 +346,10 @@ static int zed_joystick_probe(struct platform_device *pdev)
 	struct input_dev *input_dev;
 	struct input_dev *input_dev1;
 	enum iio_chan_type type;
-	int  value,error;
+	int value, error;
 	int channel;
+	int range;
+	int fuzz, deadzone;
 	enum of_gpio_flags flags;
 
 	DBG("%s Probing...\n",__func__);
@@ -546,29 +434,28 @@ static int zed_joystick_probe(struct platform_device *pdev)
 		dev_err(zed_joystick->dev, "Invalid or missing keyup voltage\n");
 		return -EINVAL;
 	}
+
 	zed_joystick->keyup_voltage /= 1000;
+	range = zed_joystick->keyup_voltage;
 	
+	// Johnny: Was this used for anything? I don't see anything regarding this
+	// even on the original tree
 	zed_joystick->axis_level = zed_joystick->keyup_voltage/jitter;
 	DBG("%s Probing... axis_level %d\n",__func__,zed_joystick->axis_level);
 	
-	//adc key 解析
 	error = adc_keys_load_keymap(zed_joystick->dev, zed_joystick);
 	if (error)
 		return error;
 	
-	
-	//gpio key 解析
 	error = gpio_keys_load_keymap(zed_joystick->dev, zed_joystick);
 	if (error)
 		return error;
 	
-	//	防抖
 	if (!device_property_read_u32(zed_joystick->dev, "debounce-interval", &value))
 		zed_joystick->debounce_interval = value;
 	
 	DBG("%s Probing...debounce_interval = %d \n",__func__,zed_joystick->debounce_interval);
 	
-	//jostick 输入设备
 	poll_dev = devm_input_allocate_polled_device(zed_joystick->dev);
 	if (!poll_dev) {
 		dev_err(zed_joystick->dev, "failed to allocate input device\n");
@@ -615,10 +502,13 @@ static int zed_joystick_probe(struct platform_device *pdev)
 	__set_bit(BTN_GAMEPAD,input_dev->keybit);
 	
 	//不映射  -32768  32767
-	input_set_abs_params(input_dev, ABS_X, 0, 18, 0, 9);
-	input_set_abs_params(input_dev, ABS_Y, 0, 18, 0, 9);
-	input_set_abs_params(input_dev, ABS_RX, 0, 18, 0, 9);
-	input_set_abs_params(input_dev, ABS_RY, 0, 18, 0, 9);
+	//tr: Do not map as -32768  32767 (johnny: because this is from the adc readings?)
+	fuzz = ((range / 2) * 100) * 5 / 10000; // 5% fuzz
+	deadzone = ((range / 2) * 100) * 15 / 10000; // 15% deadzone
+	input_set_abs_params(input_dev, ABS_X, 0, range, fuzz, deadzone);
+	input_set_abs_params(input_dev, ABS_Y, 0, range, fuzz, deadzone);
+	input_set_abs_params(input_dev, ABS_RX, 0, range, fuzz, deadzone);
+	input_set_abs_params(input_dev, ABS_RY, 0, range, fuzz, deadzone);
 
 	error = input_register_polled_device(poll_dev);
 	if (error) {
@@ -666,8 +556,6 @@ static int zed_joystick_probe(struct platform_device *pdev)
 				gpio_free(zed_joystick->otg_gpio);
 		}
 	}
-
-	error = device_create_file(&pdev->dev, &dev_attr_axis_to_dpad);
 
 	DBG("%s Probing...end\n",__func__);
 	return 0;
