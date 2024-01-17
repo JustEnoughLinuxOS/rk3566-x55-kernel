@@ -1025,7 +1025,7 @@
 	supports-emmc;
 	non-removable;
 	max-frequency = <200000000>;
-	status = "disabled";
+	status = "okay";
 };
 
 &sdmmc0 {
